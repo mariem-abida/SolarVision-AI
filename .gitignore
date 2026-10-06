@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# ML artifacts
+mlruns/
+mlartifacts/
+models/*.pt
+models/*.pth
+models/*.onnx
+
+# Data
+data/raw/
+data/interim/
+data/processed/
+
+# Original downloaded datasets
+datasets/
+
+# OS
+.DS_Store
+Thumbs.db
