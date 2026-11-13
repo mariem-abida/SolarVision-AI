@@ -1,0 +1,6 @@
+outs:
+- md5: 963e4f3d51205c0e7d619005f8d5b54e.dir
+  size: 3097999
+  nfiles: 3675
+  hash: md5
+  path: external_validation

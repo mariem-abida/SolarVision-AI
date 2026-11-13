@@ -1,0 +1,15 @@
+dataset: PVF-10
+task: image_classification
+num_classes: 10
+
+classes:
+  0: bottom dirt
+  1: break
+  2: debris cover
+  3: junction box heat
+  4: hot cell
+  5: shadow
+  6: short circuit panel
+  7: string short circuit
+  8: substring open circuit
+  9: healthy panel

@@ -1,0 +1,6 @@
+outs:
+- md5: 012e268f0e04807d9d4db7e684491046.dir
+  size: 16262925
+  nfiles: 704
+  hash: md5
+  path: panel_detection

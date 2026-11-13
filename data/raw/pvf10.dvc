@@ -1,0 +1,6 @@
+outs:
+- md5: 3a14ee0920d7f86565deb0178cf5023e.dir
+  size: 172723442
+  nfiles: 254
+  hash: md5
+  path: pvf10

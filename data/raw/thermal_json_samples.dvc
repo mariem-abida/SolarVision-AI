@@ -1,0 +1,6 @@
+outs:
+- md5: d18d0a365efdc8a37c61caeba6fd95b3.dir
+  size: 44297448
+  nfiles: 40
+  hash: md5
+  path: thermal_json_samples

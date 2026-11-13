@@ -21,7 +21,6 @@ models/*.pth
 models/*.onnx
 
 # Data
-data/raw/
 data/interim/
 data/processed/
 
@@ -31,3 +30,36 @@ datasets/
 # OS
 .DS_Store
 Thumbs.db
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Trained models
+models/
+runs/
+weights/
+*.pt
+*.pth
+
+# Generated outputs
+outputs/
+
+# Local datasets
+datasets/
+data/raw/
+
+# Frontend dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Secrets
+.env
+.env.*
+!.env.example

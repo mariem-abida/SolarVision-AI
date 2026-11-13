@@ -1,0 +1,6 @@
+outs:
+- md5: 44b5d733bfda5f8ca78d212dabacbd14.dir
+  size: 1430688115
+  nfiles: 45688
+  hash: md5
+  path: defect_detection

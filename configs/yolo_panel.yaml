@@ -1,0 +1,12 @@
+
+# SolarVision AI - Panel Detection
+
+path: C:/SolarVision/data/interim/panel_detection
+
+train: train/images
+val: val/images
+test: test/images
+
+nc: 1
+names:
+  0: panel

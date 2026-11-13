@@ -1,0 +1,16 @@
+
+services:
+  solarvision-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solarvision-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models/classification:/app/models/classification:ro
+      - ./runs/detect/runs/solarvision/panel_detection_full/weights:/app/runs/detect/runs/solarvision/panel_detection_full/weights:ro
+      - ./runs/solarvision/defect_detection_full-2/weights:/app/runs/solarvision/defect_detection_full-2/weights:ro
+    environment:
+      PYTHONUNBUFFERED: "1"
+    restart: unless-stopped

@@ -1,0 +1,6 @@
+outs:
+- md5: c189eb97f942f911b06d0bbc97a75bcd.dir
+  size: 4253227949
+  nfiles: 3
+  hash: md5
+  path: rgb_thermal

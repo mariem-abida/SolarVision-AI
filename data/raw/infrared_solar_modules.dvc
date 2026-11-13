@@ -1,0 +1,6 @@
+outs:
+- md5: 0f3e45daedb67adb15943d127335f68a.dir
+  size: 15499846
+  nfiles: 3
+  hash: md5
+  path: infrared_solar_modules

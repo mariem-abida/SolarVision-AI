@@ -1,0 +1,13 @@
+
+# SolarVision AI - Defect Detection
+
+path: C:/SolarVision/data/interim/defect_detection
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 1
+
+names:
+  0: defect
