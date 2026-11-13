@@ -1,10 +1,16 @@
+
+# ==========================================
+# SOLARVISION AI - GITIGNORE
+# ==========================================
+
 # Python
 .venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
 
-# Environment / secrets
+# Environment / Secrets
 .env
 .env.*
 !.env.example
@@ -13,53 +19,39 @@ __pycache__/
 .vscode/
 .idea/
 
-# ML artifacts
+# MLflow
 mlruns/
 mlartifacts/
-models/*.pt
-models/*.pth
-models/*.onnx
+mlflow.db
 
-# Data
+# Trained models and checkpoints
+models/
+runs/
+weights/
+*.pt
+*.pth
+*.onnx
+
+# Generated outputs
+outputs/
+
+# Intermediate and processed data
 data/interim/
 data/processed/
 
 # Original downloaded datasets
 datasets/
 
-# OS
-.DS_Store
-Thumbs.db
-# Python
-.venv/
-__pycache__/
-*.pyc
-.pytest_cache/
-
-# MLflow
-mlruns/
-mlflow.db
-
-# Trained models
-models/
-runs/
-weights/
-*.pt
-*.pth
-
-# Generated outputs
-outputs/
-
-# Local datasets
-datasets/
-data/raw/
-
-# Frontend dependencies
+# Frontend
 node_modules/
 frontend/node_modules/
 frontend/dist/
 
-# Secrets
-.env
-.env.*
-!.env.example
+# OS
+.DS_Store
+Thumbs.db
+
+# IMPORTANT:
+# Do not ignore data/raw/ here.
+# Its datasets are ignored by data/raw/.gitignore.
+# Keep data/raw/*.dvc tracked by Git.
