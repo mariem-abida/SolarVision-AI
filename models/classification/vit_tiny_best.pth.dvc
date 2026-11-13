@@ -1,0 +1,5 @@
+outs:
+- md5: c547ed38816dc2c457a896637f4d18c5
+  size: 22165315
+  hash: md5
+  path: vit_tiny_best.pth

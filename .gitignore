@@ -1,57 +1,102 @@
 
-# ==========================================
+# ============================================
 # SOLARVISION AI - GITIGNORE
-# ==========================================
+# ============================================
 
-# Python
+# ============================================
+# 1. PYTHON
+# ============================================
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
 
-# Environment / Secrets
+# ============================================
+# 2. ENVIRONMENT & SECRETS
+# ============================================
 .env
 .env.*
 !.env.example
 
-# IDE
+# ============================================
+# 3. IDE
+# ============================================
 .vscode/
 .idea/
 
-# MLflow
+# ============================================
+# 4. MLFLOW
+# ============================================
 mlruns/
 mlartifacts/
 mlflow.db
 
-# Trained models and checkpoints
-models/
-runs/
-weights/
+# ============================================
+# 5. TRAINED MODELS - DVC
+# ============================================
+
+# Ignore model artifacts
+models/**
+
+# Allow subdirectories and DVC metadata
+!models/**/
+!models/**/*.dvc
+!models/**/.gitignore
+
+# Ignore training outputs
+runs/**
+
+# Allow DVC metadata inside runs
+!runs/**/
+!runs/**/*.dvc
+!runs/**/.gitignore
+
+# Ignore model weights
+/weights/
 *.pt
 *.pth
 *.onnx
 
-# Generated outputs
-outputs/
-
-# Intermediate and processed data
-data/interim/
-data/processed/
+# ============================================
+# 6. DATASETS
+# ============================================
 
 # Original downloaded datasets
 datasets/
 
-# Frontend
+# Intermediate and processed datasets
+data/interim/
+data/processed/
+
+# IMPORTANT:
+# Do not ignore data/raw/
+# DVC tracks its datasets through .dvc files.
+# Dataset folders are ignored by data/raw/.gitignore.
+
+# ============================================
+# 7. GENERATED OUTPUTS
+# ============================================
+outputs/
+
+# ============================================
+# 8. FRONTEND REACT
+# ============================================
 node_modules/
 frontend/node_modules/
 frontend/dist/
+frontend/.vite/
 
-# OS
+# ============================================
+# 9. OPERATING SYSTEM
+# ============================================
 .DS_Store
 Thumbs.db
 
-# IMPORTANT:
-# Do not ignore data/raw/ here.
-# Its datasets are ignored by data/raw/.gitignore.
-# Keep data/raw/*.dvc tracked by Git.
+# ============================================
+# 10. TEMPORARY FILES
+# ============================================
+*.log
+*.tmp
+*.bak
