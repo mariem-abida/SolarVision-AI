@@ -8,9 +8,51 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./models/classification:/app/models/classification:ro
-      - ./runs/detect/runs/solarvision/panel_detection_full/weights:/app/runs/detect/runs/solarvision/panel_detection_full/weights:ro
-      - ./runs/solarvision/defect_detection_full-2/weights:/app/runs/solarvision/defect_detection_full-2/weights:ro
+      # Local full-stack workspace: code changes require an API restart, not a rebuild.
+      - ./src:/app/src:ro
+      # Trained checkpoints and experiment artifacts are never baked into an image.
+      - ./models:/app/models:ro
+      - ./runs:/app/runs:ro
+      - ./reports:/app/reports:ro
+      - ./data/raw:/app/data/raw:ro
+      - ./data/processed/pvf10_grouped:/app/data/processed/pvf10_grouped:ro
+      - solarvision-history:/app/storage
     environment:
       PYTHONUNBUFFERED: "1"
+      SOLARVISION_HISTORY_DB: /app/storage/inspections.sqlite3
+      # Append additional browser origins as a comma-separated list if necessary.
+      SOLARVISION_CORS_ORIGINS: ${SOLARVISION_CORS_ORIGINS:-http://localhost:8081,http://127.0.0.1:8081}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)); raise SystemExit(0 if isinstance(r.get('models_loaded'), bool) and isinstance(r.get('status'), str) else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
     restart: unless-stopped
+
+  solarvision-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # This URL is used by the host browser, not by the frontend container.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8000}
+    ports:
+      - "8081:8081"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: "8081"
+    depends_on:
+      solarvision-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  solarvision-history:

@@ -1,0 +1,11 @@
+# Optional: use only when the existing local MLflow SQLite file is present.
+# docker compose -f compose.yaml -f compose.mlflow.yaml up -d
+services:
+  solarvision-api:
+    volumes:
+      - type: bind
+        source: ./mlflow.db
+        target: /app/mlflow.db
+        read_only: true
+        bind:
+          create_host_path: false

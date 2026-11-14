@@ -100,3 +100,8 @@ Thumbs.db
 *.log
 *.tmp
 *.bak
+
+# Runtime inspection reports and previews
+data/inspections.sqlite3*
+frontend/.output/
+frontend/.nitro/

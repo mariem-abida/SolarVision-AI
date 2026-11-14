@@ -77,7 +77,44 @@ jobs:
 
       - name: Run FastAPI tests
         run: |
-          python -m pytest -v tests/test_api_contract.py
+          python -m pytest -v tests
+
+  frontend:
+    name: Frontend Quality and Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.4"
+
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check TypeScript
+        run: bunx tsc --noEmit
+
+      - name: Lint frontend
+        run: bun run lint
+
+      - name: Test frontend
+        run: bun run test
+
+      - name: Build standalone frontend
+        run: bun run build
+        env:
+          NITRO_PRESET: node_server
 
 
   # ============================================
@@ -90,6 +127,7 @@ jobs:
     needs:
       - code-quality
       - api-tests
+      - frontend
 
     steps:
       - name: Checkout repository
@@ -98,3 +136,9 @@ jobs:
       - name: Build SolarVision Docker image
         run: |
           docker build -t solarvision-api:ci .
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Build frontend Docker image
+        run: docker build -t solarvision-frontend:ci frontend
