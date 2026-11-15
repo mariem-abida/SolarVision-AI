@@ -1,0 +1,170 @@
+[
+    {
+        "dataset": "defect_detection",
+        "total_files": 45688,
+        "images": 22842,
+        "extensions": {
+            ".yaml": 1,
+            ".cache": 3,
+            ".jpg": 22842,
+            ".txt": 22842
+        },
+        "resolutions": {
+            "640x640": 21351,
+            "800x800": 684,
+            "700x700": 807
+        },
+        "corrupted_images": [],
+        "corrupted_count": 0
+    },
+    {
+        "dataset": "external_validation",
+        "total_files": 3675,
+        "images": 3675,
+        "extensions": {
+            ".jpg": 3675
+        },
+        "resolutions": {
+            "37x58": 86,
+            "36x58": 203,
+            "33x60": 19,
+            "35x60": 304,
+            "35x59": 253,
+            "37x60": 198,
+            "37x57": 25,
+            "36x61": 260,
+            "33x62": 5,
+            "35x58": 189,
+            "36x59": 254,
+            "34x60": 112,
+            "36x60": 344,
+            "35x61": 213,
+            "33x61": 8,
+            "37x59": 135,
+            "37x61": 130,
+            "35x62": 132,
+            "34x61": 56,
+            "34x62": 45,
+            "36x62": 126,
+            "34x59": 107,
+            "39x62": 3,
+            "38x59": 35,
+            "35x64": 2,
+            "39x61": 2,
+            "34x58": 74,
+            "38x58": 25,
+            "38x61": 21,
+            "35x57": 53,
+            "33x59": 6,
+            "39x59": 5,
+            "39x58": 5,
+            "39x57": 2,
+            "38x57": 9,
+            "37x62": 43,
+            "36x63": 14,
+            "38x63": 5,
+            "38x60": 28,
+            "33x58": 10,
+            "36x57": 54,
+            "36x64": 1,
+            "34x57": 14,
+            "35x63": 14,
+            "37x63": 6,
+            "34x63": 7,
+            "34x64": 2,
+            "34x65": 1,
+            "35x65": 2,
+            "38x56": 1,
+            "36x56": 3,
+            "38x62": 5,
+            "36x55": 2,
+            "37x56": 4,
+            "34x55": 1,
+            "32x62": 1,
+            "32x60": 1,
+            "33x64": 1,
+            "37x64": 1,
+            "39x60": 3,
+            "40x60": 1,
+            "40x58": 3,
+            "33x56": 1
+        },
+        "corrupted_images": [],
+        "corrupted_count": 0
+    },
+    {
+        "dataset": "infrared_solar_modules",
+        "total_files": 3,
+        "images": 0,
+        "extensions": {
+            ".zip": 1,
+            "": 1,
+            ".md": 1
+        },
+        "resolutions": {},
+        "corrupted_images": [],
+        "corrupted_count": 0
+    },
+    {
+        "dataset": "panel_detection",
+        "total_files": 704,
+        "images": 353,
+        "extensions": {
+            ".jpg": 353,
+            ".txt": 351
+        },
+        "resolutions": {
+            "640x512": 353
+        },
+        "corrupted_images": [],
+        "corrupted_count": 0
+    },
+    {
+        "dataset": "pvf10",
+        "total_files": 254,
+        "images": 3,
+        "extensions": {
+            "": 2,
+            ".json": 2,
+            ".py": 120,
+            ".zip": 1,
+            ".txt": 19,
+            ".xml": 4,
+            ".iml": 1,
+            ".png": 3,
+            ".csv": 1,
+            ".pyc": 101
+        },
+        "resolutions": {
+            "7500x2500": 2,
+            "7500x5500": 1
+        },
+        "corrupted_images": [],
+        "corrupted_count": 0
+    },
+    {
+        "dataset": "rgb_thermal",
+        "total_files": 3,
+        "images": 0,
+        "extensions": {
+            ".zip": 3
+        },
+        "resolutions": {},
+        "corrupted_images": [],
+        "corrupted_count": 0
+    },
+    {
+        "dataset": "thermal_json_samples",
+        "total_files": 40,
+        "images": 20,
+        "extensions": {
+            ".jpg": 20,
+            ".json": 20
+        },
+        "resolutions": {
+            "640x512": 20
+        },
+        "corrupted_images": [],
+        "corrupted_count": 0
+    }
+]

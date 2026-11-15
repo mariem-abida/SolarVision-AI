@@ -1,0 +1,8 @@
+{
+  "accuracy": 0.8676207513416816,
+  "macro_precision": 0.7983386807855201,
+  "macro_recall": 0.8215239079793875,
+  "macro_f1": 0.8071172547462255,
+  "checkpoint_epoch": 9,
+  "test_images": 559
+}
