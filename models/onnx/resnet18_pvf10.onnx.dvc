@@ -1,0 +1,5 @@
+outs:
+- md5: 8634c3791e2bd60f81bfba70369ef449
+  size: 44717106
+  hash: md5
+  path: resnet18_pvf10.onnx
