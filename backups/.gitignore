@@ -1,0 +1,4 @@
+/solarvision_mlflow_backup.zip
+if (Test-Path backups/.gitignore) {
+    git add backups/.gitignore
+}
