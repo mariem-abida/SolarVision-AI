@@ -1,0 +1,148 @@
+
+# ==========================================
+# SOLARVISION AI - KUBERNETES
+# Local deployment with Kind
+# ==========================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: solarvision
+
+---
+# ==========================================
+# PERSISTENT STORAGE - SQLITE
+# ==========================================
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: solarvision-history-pvc
+  namespace: solarvision
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# ==========================================
+# FASTAPI DEPLOYMENT
+# ==========================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: solarvision-api
+  namespace: solarvision
+  labels:
+    app: solarvision-api
+
+spec:
+  replicas: 1
+
+  strategy:
+    type: Recreate
+
+  selector:
+    matchLabels:
+      app: solarvision-api
+
+  template:
+    metadata:
+      labels:
+        app: solarvision-api
+
+    spec:
+      containers:
+        - name: solarvision-api
+          image: solarvision-api:k8s-v2
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8000
+              name: http
+
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+
+            - name: SOLARVISION_HISTORY_DB
+              value: /app/storage/inspections.sqlite3
+
+            - name: SOLARVISION_CORS_ORIGINS
+              value: "http://localhost:8081,http://127.0.0.1:8081,http://localhost:8082,http://127.0.0.1:8082"
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+
+          volumeMounts:
+            - name: models
+              mountPath: /app/models
+              readOnly: true
+
+            - name: runs
+              mountPath: /app/runs
+              readOnly: true
+
+            - name: history
+              mountPath: /app/storage
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+            failureThreshold: 30
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 30
+
+      volumes:
+        - name: models
+          hostPath:
+            path: /opt/solarvision/models
+            type: Directory
+
+        - name: runs
+          hostPath:
+            path: /opt/solarvision/runs
+            type: Directory
+
+        - name: history
+          persistentVolumeClaim:
+            claimName: solarvision-history-pvc
+
+---
+# ==========================================
+# FASTAPI SERVICE
+# ==========================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: solarvision-api
+  namespace: solarvision
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: solarvision-api
+
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
