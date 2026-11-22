@@ -12,20 +12,23 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 ## Development
 
-Utiliser Node.js 22 et Bun. Depuis ce répertoire :
+Utiliser Node.js >=22.12 et Bun 1.4.4. La CI et les images Docker épinglées utilisent exactement Node.js 22.23.5 et Bun 1.4.4. Depuis ce répertoire :
 
 ```sh
 bun install --frozen-lockfile
 bun run dev --host 127.0.0.1 --port 8081
 ```
 
-Configurer l’API dans Settings, par défaut `http://127.0.0.1:8000`. `VITE_API_BASE_URL` change la valeur initiale au démarrage/build ; les préférences du navigateur existantes restent prioritaires.
+Configurer l’API dans Settings, par défaut `http://127.0.0.1:8000`. Le serveur construit utilise `SOLARVISION_PUBLIC_API_BASE_URL` via `/solarvision-config.js` ; `VITE_API_BASE_URL` fournit le fallback compilé. Les préférences du navigateur existantes restent prioritaires. Ces valeurs sont publiques et ne doivent contenir aucun secret.
 
 ```sh
-bunx tsc --noEmit
-bun run test
+bun run test:ci
 bun run lint
-bun run build
+NITRO_PRESET=node_server bun run build
 ```
 
-Le Dockerfile frontend utilise `NITRO_PRESET=node_server` pour produire un serveur Node autonome sans remplacer les plugins de configuration Lovable.
+`test:ci` lance TypeScript puis les tests unitaires Vitest/jsdom. Ils fonctionnent sur un checkout propre, sans API en cours, navigateur Playwright, données DVC, modèles ou fichiers d'audit. `test` et `test:unit` lancent uniquement Vitest ; `typecheck` lance uniquement TypeScript. Le lockfile Bun est commité et l'installation CI doit rester gelée (`--frozen-lockfile`).
+
+Sous PowerShell, définir `$env:NITRO_PRESET = "node_server"` avant `bun run build`. Le Dockerfile applique déjà ce preset pour produire un serveur Node autonome sans remplacer les plugins de configuration Lovable.
+
+Les [E2E avec modèles locaux](E2E.md) sont séparés de cette CI. Ils exigent un opt-in explicite, des bases jetables et des images d'essai locales ; ils refusent les ports de l'application déployée. Leurs petites fixtures techniques sont générées sans datasets privés. Ne pas ajouter les données, checkpoints, bases ou captures au dépôt pour les exécuter.

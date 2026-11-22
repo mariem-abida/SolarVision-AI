@@ -39,7 +39,7 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className={`app-shell ${collapsed ? "is-collapsed" : ""}`}>
       <aside className="app-sidebar">
-        <Link to="/" className="brand">
+        <Link to="/" className="brand" aria-label="SolarVision AI home">
           <div className="brand-mark">
             <ScanLine size={24} />
             <Zap size={11} className="brand-bolt" />
@@ -61,7 +61,9 @@ export function Shell({ children }: { children: ReactNode }) {
               {i === 6 && <div className="nav-label system-label">SYSTEM</div>}
               <Link
                 to={n.to}
-                title={collapsed ? n.label : undefined}
+                aria-label={n.label}
+                aria-current={pathname === n.to ? "page" : undefined}
+                title={n.label}
                 className={`nav-item ${pathname === n.to ? "active" : ""}`}
               >
                 <n.icon size={19} strokeWidth={1.7} />

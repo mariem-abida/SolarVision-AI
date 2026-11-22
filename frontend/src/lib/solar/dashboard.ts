@@ -5,6 +5,7 @@ import { useWorkspace } from "@/components/solar/workspace";
 
 const numberMap = z.record(z.number().finite());
 const status = z.enum(["available", "unavailable", "not_configured"]);
+const metadataSource = z.enum(["runtime", "snapshot", "unavailable"]);
 const evaluationSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -14,9 +15,26 @@ const evaluationSchema = z.object({
   recorded_at: z.string().nullable(),
   metrics: numberMap,
   explanation: z.string().nullable(),
+  metadata_source: metadataSource.optional(),
 });
 export const dashboardSchema = z.object({
   generated_at: z.string(),
+  metadata: z
+    .object({
+      mode: z.enum(["runtime", "snapshot", "mixed", "unavailable"]),
+      snapshot: z.object({
+        status: z.enum(["valid", "invalid", "absent"]),
+        generated_at: z.string().nullable(),
+        age_seconds: z.number().nullable(),
+        freshness: z.string(),
+        payload_sha256: z.string().nullable(),
+        sources: z.array(
+          z.object({ path: z.string(), sha256: z.string(), runtime_state: z.string() }),
+        ),
+        explanation: z.string(),
+      }),
+    })
+    .optional(),
   evaluations: z.array(evaluationSchema),
   datasets: z.array(
     z.object({
@@ -29,6 +47,8 @@ export const dashboardSchema = z.object({
       size_bytes: z.number().nullable(),
       file_count: z.number().nullable(),
       local_available: z.boolean(),
+      statistics_metadata_source: metadataSource.optional(),
+      split_metadata_source: metadataSource.optional(),
       statistics: z.object({
         images: z.number().optional(),
         total_files: z.number().optional(),
@@ -45,6 +65,7 @@ export const dashboardSchema = z.object({
         )
         .nullable(),
       explanation: z.string().nullable(),
+      metadata_source: metadataSource.optional(),
     }),
   ),
   mlops: z.object({
@@ -52,11 +73,17 @@ export const dashboardSchema = z.object({
       status,
       tracked_datasets: z.number(),
       remote_configured: z.boolean(),
+      remote_names: z.array(z.string()).optional(),
+      remote_accessible: z.boolean().nullable().optional(),
+      artifacts_synchronized: z.boolean().nullable().optional(),
+      configuration_source: metadataSource.optional(),
+      metadata_source: metadataSource.optional(),
       explanation: z.string().nullable(),
     }),
     mlflow: z.object({
       status,
       source: z.string(),
+      metadata_source: metadataSource.optional(),
       experiments: z.array(z.object({ id: z.string(), name: z.string() })),
       runs: z.array(
         z.object({
@@ -100,9 +127,16 @@ export const dashboardSchema = z.object({
         epochs: z.number(),
         last_metrics: numberMap,
         recorded_at: z.string(),
+        metadata_source: metadataSource.optional(),
       }),
     ),
-    ci: z.object({ configured: z.boolean(), source: z.string(), explanation: z.string() }),
+    ci: z.object({
+      configured: z.boolean(),
+      source: z.string(),
+      explanation: z.string(),
+      execution_status: z.literal("not_checked").optional(),
+      metadata_source: metadataSource.optional(),
+    }),
   }),
 });
 export const monitoringSchema = z.object({

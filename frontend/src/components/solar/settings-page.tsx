@@ -15,13 +15,22 @@ type ConnectionTest = {
 const invalidUrlMessage =
   "Enter a valid HTTP or HTTPS API URL without credentials, query parameters, or a fragment.";
 export function SettingsPage() {
-  const { preferences, updatePreferences, history, clearHistory, healthState, historyError } =
-    useWorkspace();
+  const {
+    preferences,
+    updatePreferences,
+    history,
+    clearHistory,
+    healthState,
+    historyError,
+    legacyHistory = [],
+    importLegacyHistory,
+  } = useWorkspace();
   const [url, setUrl] = useState(preferences.apiUrl);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [test, setTest] = useState<ConnectionTest | null>(null);
   const [confirm, setConfirm] = useState(false);
+  const [legacyBusy, setLegacyBusy] = useState(false);
   const testRequest = useRef(0);
   useEffect(() => {
     setUrl(preferences.apiUrl);
@@ -236,12 +245,56 @@ export function SettingsPage() {
         <section className="settings-section">
           <h2>Inspection history cache</h2>
           <p className="text-note mb-4">
-            {history.length} completed inspections in this workspace. Browser records are merged
-            with the backend SQLite history when available; existing local records are preserved
-            during synchronization.
+            {history.length} completed inspections for {preferences.apiUrl}. Each API has a separate
+            browser cache. Switching connections never imports another API's records.
           </p>
           {historyError && (
             <p className="error-banner">History synchronization unavailable: {historyError}</p>
+          )}
+          {legacyHistory.length > 0 && (
+            <div className="notice mb-4">
+              <div>
+                <p>
+                  {legacyHistory.length} legacy browser records are preserved separately. Their API
+                  provenance is unknown; they are never imported automatically.
+                </p>
+                <div className="inline-actions mt-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => downloadJson(legacyHistory, "solarvision-legacy-history.json")}
+                  >
+                    <Download />
+                    Export legacy records
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={legacyBusy}
+                    onClick={() => {
+                      setLegacyBusy(true);
+                      void importLegacyHistory()
+                        .then(() => {
+                          setMessage(
+                            `Legacy records imported into ${preferences.apiUrl}. The original legacy cache is preserved.`,
+                          );
+                          setError(null);
+                        })
+                        .catch((failure: unknown) => {
+                          setError(
+                            failure instanceof Error
+                              ? failure.message
+                              : "Legacy import failed; the original cache is preserved.",
+                          );
+                        })
+                        .finally(() => setLegacyBusy(false));
+                    }}
+                  >
+                    {legacyBusy
+                      ? "Importing legacy records…"
+                      : "Import legacy records into this API"}
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
           <div className="inline-actions">
             <Button

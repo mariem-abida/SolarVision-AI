@@ -1,0 +1,627 @@
+{
+  "generated_at": "2026-11-22T11:29:54.955197+00:00",
+  "manifest_sha256": "ad50568ae397ebfb5d7ddb4e60cebcbe674ccbba0aeedb0c151c8bc1247d1c4f",
+  "payload": {
+    "datasets": [
+      {
+        "dvc_file": "data/raw/panel_detection.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 704,
+        "id": "panel_detection",
+        "local_available": false,
+        "name": "Panel Detection",
+        "path": "data/raw/panel_detection",
+        "size_bytes": 16262925,
+        "split_summary": null,
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 353,
+          "total_files": 704
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "012e268f0e04807d9d4db7e684491046.dir"
+      },
+      {
+        "dvc_file": "data/raw/defect_detection.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 45688,
+        "id": "defect_detection",
+        "local_available": false,
+        "name": "Defect Detection",
+        "path": "data/raw/defect_detection",
+        "size_bytes": 1430688115,
+        "split_summary": null,
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 22842,
+          "total_files": 45688
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "44b5d733bfda5f8ca78d212dabacbd14.dir"
+      },
+      {
+        "dvc_file": "data/raw/pvf10.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 254,
+        "id": "pvf10",
+        "local_available": false,
+        "name": "PVF-10",
+        "path": "data/raw/pvf10",
+        "size_bytes": 172723442,
+        "split_summary": {
+          "test": {
+            "classes": {
+              "0": 20,
+              "1": 8,
+              "2": 45,
+              "3": 80,
+              "4": 110,
+              "5": 48,
+              "6": 35,
+              "7": 13,
+              "8": 54,
+              "9": 146
+            },
+            "groups": 124,
+            "images": 559
+          },
+          "train": {
+            "classes": {
+              "0": 314,
+              "1": 108,
+              "2": 327,
+              "3": 661,
+              "4": 745,
+              "5": 228,
+              "6": 357,
+              "7": 49,
+              "8": 470,
+              "9": 1226
+            },
+            "groups": 988,
+            "images": 4485
+          },
+          "val": {
+            "classes": {
+              "0": 43,
+              "1": 15,
+              "2": 38,
+              "3": 59,
+              "4": 91,
+              "5": 27,
+              "6": 35,
+              "7": 9,
+              "8": 71,
+              "9": 145
+            },
+            "groups": 124,
+            "images": 533
+          }
+        },
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 3,
+          "total_files": 254
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "3a14ee0920d7f86565deb0178cf5023e.dir"
+      },
+      {
+        "dvc_file": "data/raw/infrared_solar_modules.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 3,
+        "id": "infrared_solar_modules",
+        "local_available": false,
+        "name": "Infrared Solar Modules",
+        "path": "data/raw/infrared_solar_modules",
+        "size_bytes": 15499846,
+        "split_summary": null,
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 0,
+          "total_files": 3
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "0f3e45daedb67adb15943d127335f68a.dir"
+      },
+      {
+        "dvc_file": "data/raw/external_validation.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 3675,
+        "id": "external_validation",
+        "local_available": false,
+        "name": "External Validation",
+        "path": "data/raw/external_validation",
+        "size_bytes": 3097999,
+        "split_summary": null,
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 3675,
+          "total_files": 3675
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "963e4f3d51205c0e7d619005f8d5b54e.dir"
+      },
+      {
+        "dvc_file": "data/raw/rgb_thermal.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 3,
+        "id": "rgb_thermal",
+        "local_available": false,
+        "name": "RGB / Thermal",
+        "path": "data/raw/rgb_thermal",
+        "size_bytes": 4253227949,
+        "split_summary": null,
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 0,
+          "total_files": 3
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "c189eb97f942f911b06d0bbc97a75bcd.dir"
+      },
+      {
+        "dvc_file": "data/raw/thermal_json_samples.dvc",
+        "explanation": "DVC content hash identifies the tracked snapshot; validation counts are historical.",
+        "file_count": 40,
+        "id": "thermal_json_samples",
+        "local_available": false,
+        "name": "Thermal JSON Samples",
+        "path": "data/raw/thermal_json_samples",
+        "size_bytes": 44297448,
+        "split_summary": null,
+        "statistics": {
+          "corrupted_count": 0,
+          "images": 20,
+          "total_files": 40
+        },
+        "statistics_source": "reports/data_validation/raw_data_validation.json",
+        "status": "available",
+        "version": "d18d0a365efdc8a37c61caeba6fd95b3.dir"
+      }
+    ],
+    "evaluations": [
+      {
+        "explanation": "Historical test evaluation; recorded_at is the report file timestamp.",
+        "id": "panels",
+        "metrics": {
+          "map50": 0.9947295494872247,
+          "map50_95": 0.8775077829952705,
+          "precision": 0.9898189778353884,
+          "recall": 0.9874427621559605
+        },
+        "name": "YOLO11n Panel Detection",
+        "recorded_at": "2026-10-08T22:31:33.556645+00:00",
+        "source": "reports/detection/panel/test_metrics.json",
+        "status": "available",
+        "task": "detection"
+      },
+      {
+        "explanation": "Historical test evaluation; recorded_at is the report file timestamp.",
+        "id": "defects",
+        "metrics": {
+          "map50": 0.5874744062879207,
+          "map50_95": 0.369908706695241,
+          "precision": 0.5705434740973279,
+          "recall": 0.6337386018237082
+        },
+        "name": "YOLO11n Defect Detection",
+        "recorded_at": "2026-10-11T18:44:16.966483+00:00",
+        "source": "reports/detection/defect/test_metrics.json",
+        "status": "available",
+        "task": "detection"
+      },
+      {
+        "explanation": "Historical test evaluation; recorded_at is the report file timestamp.",
+        "id": "resnet18",
+        "metrics": {
+          "accuracy": 0.9069767441860465,
+          "checkpoint_epoch": 11,
+          "macro_f1": 0.8502329882415948,
+          "macro_precision": 0.8404279529993817,
+          "macro_recall": 0.8675758868224621,
+          "test_images": 559
+        },
+        "name": "ResNet18",
+        "recorded_at": "2026-10-08T21:36:13.801646+00:00",
+        "source": "reports/classification/resnet18/test_metrics.json",
+        "status": "available",
+        "task": "classification"
+      },
+      {
+        "explanation": "Historical test evaluation; recorded_at is the report file timestamp.",
+        "id": "vit_tiny",
+        "metrics": {
+          "accuracy": 0.8676207513416816,
+          "checkpoint_epoch": 9,
+          "macro_f1": 0.8071172547462255,
+          "macro_precision": 0.7983386807855201,
+          "macro_recall": 0.8215239079793875,
+          "test_images": 559
+        },
+        "name": "ViT-Tiny",
+        "recorded_at": "2026-10-08T22:06:36.503013+00:00",
+        "source": "reports/classification/vit_tiny/test_metrics.json",
+        "status": "available",
+        "task": "classification"
+      }
+    ],
+    "mlops": {
+      "ci": {
+        "configured": true,
+        "execution_status": "not_checked",
+        "explanation": "Workflow file presence only; remote GitHub Actions execution status is not configured.",
+        "source": ".github/workflows/ci.yml"
+      },
+      "dvc": {
+        "artifacts_synchronized": null,
+        "explanation": "Local descriptors only; no remote connectivity or cache integrity check is performed.",
+        "remote_accessible": null,
+        "remote_configured": true,
+        "remote_names": [
+          "gdrive",
+          "gdrive_onnx"
+        ],
+        "status": "available",
+        "tracked_datasets": 7
+      },
+      "mlflow": {
+        "experiments": [
+          {
+            "id": "0",
+            "name": "Default"
+          },
+          {
+            "id": "1",
+            "name": "SolarVision-PVF10-Classification"
+          },
+          {
+            "id": "2",
+            "name": "SolarVision-YOLO-Detection"
+          }
+        ],
+        "explanation": "Recorded local SQLite metadata; no MLflow tracking-server connectivity was checked.",
+        "registry": [
+          {
+            "name": "SolarVision-YOLO11n-Defect-Detection",
+            "run_id": "84f053fc93e9478888e4cc71439df218",
+            "stage": "None",
+            "status": "READY",
+            "version": 1
+          },
+          {
+            "name": "SolarVision-YOLO11n-Panel-Detection",
+            "run_id": "87c4082f861447ecafac3c3bc150bb72",
+            "stage": "None",
+            "status": "READY",
+            "version": 1
+          },
+          {
+            "name": "SolarVision-ViT-Tiny-PVF10",
+            "run_id": "c0b6adae9c18495e9e7f7d3621c4c11d",
+            "stage": "None",
+            "status": "READY",
+            "version": 1
+          },
+          {
+            "name": "SolarVision-ResNet18-PVF10",
+            "run_id": "de01e665d2864cbcae311848d022e92b",
+            "stage": "None",
+            "status": "READY",
+            "version": 1
+          }
+        ],
+        "runs": [
+          {
+            "end_time": 1795210630045,
+            "experiment_id": "2",
+            "id": "84f053fc93e9478888e4cc71439df218",
+            "metrics": {},
+            "name": "Registry-YOLO11n-Defects",
+            "start_time": 1795210624343,
+            "status": "FINISHED"
+          },
+          {
+            "end_time": 1795210532495,
+            "experiment_id": "2",
+            "id": "87c4082f861447ecafac3c3bc150bb72",
+            "metrics": {},
+            "name": "Registry-YOLO11n-Panels",
+            "start_time": 1795210526620,
+            "status": "FINISHED"
+          },
+          {
+            "end_time": 1795210407817,
+            "experiment_id": "1",
+            "id": "c0b6adae9c18495e9e7f7d3621c4c11d",
+            "metrics": {},
+            "name": "Registry-ViT-Tiny-PVF10",
+            "start_time": 1795210399547,
+            "status": "FINISHED"
+          },
+          {
+            "end_time": 1795210202675,
+            "experiment_id": "1",
+            "id": "de01e665d2864cbcae311848d022e92b",
+            "metrics": {},
+            "name": "Registry-ResNet18-PVF10",
+            "start_time": 1795210185441,
+            "status": "FINISHED"
+          },
+          {
+            "end_time": 1791496930833,
+            "experiment_id": "1",
+            "id": "caac21aa81fa43d190b6faf695e26699",
+            "metrics": {
+              "best_val_macro_f1": 0.8526956085957789,
+              "train_accuracy": 0.9716833890746934,
+              "train_loss": 0.07203770964650423,
+              "train_macro_f1": 0.9719886088891083,
+              "val_accuracy": 0.8968105065666041,
+              "val_loss": 0.4280403672541032,
+              "val_macro_f1": 0.822724418164768
+            },
+            "name": "ViT-Tiny-PVF10-Grouped",
+            "start_time": 1791496269948,
+            "status": "FINISHED"
+          },
+          {
+            "end_time": 1791495078131,
+            "experiment_id": "1",
+            "id": "bbf8ab04448e4bd18ee8b5b5fee435a7",
+            "metrics": {
+              "best_val_macro_f1": 0.870368491442904,
+              "train_accuracy": 0.937123745819398,
+              "train_loss": 0.20445000442241212,
+              "train_macro_f1": 0.919194811956956,
+              "val_accuracy": 0.9080675422138836,
+              "val_loss": 0.3655894123643329,
+              "val_macro_f1": 0.8579047503568713
+            },
+            "name": "ResNet18-PVF10-Grouped",
+            "start_time": 1791494262293,
+            "status": "FINISHED"
+          }
+        ],
+        "source": "mlflow.db",
+        "status": "available"
+      },
+      "training_runs": [
+        {
+          "epochs": 50,
+          "id": "panel_detection_full",
+          "last_metrics": {
+            "epoch": 50.0,
+            "lr/pg0": 2.98e-05,
+            "lr/pg1": 2.98e-05,
+            "lr/pg2": 2.98e-05,
+            "metrics/mAP50(B)": 0.99488,
+            "metrics/mAP50-95(B)": 0.88797,
+            "metrics/precision(B)": 0.99327,
+            "metrics/recall(B)": 0.9897,
+            "time": 349.903,
+            "train/box_loss": 0.54023,
+            "train/cls_loss": 0.45341,
+            "train/dfl_loss": 0.83219,
+            "val/box_loss": 0.47774,
+            "val/cls_loss": 0.39672,
+            "val/dfl_loss": 0.83527
+          },
+          "name": "panel_detection_full",
+          "recorded_at": "2026-10-08T22:29:25.638553+00:00",
+          "source": "runs/detect/runs/solarvision/panel_detection_full/results.csv"
+        },
+        {
+          "epochs": 3,
+          "id": "panel_detection_pilot",
+          "last_metrics": {
+            "epoch": 3.0,
+            "lr/pg0": 0.00068,
+            "lr/pg1": 0.00068,
+            "lr/pg2": 0.00068,
+            "metrics/mAP50(B)": 0.8991,
+            "metrics/mAP50-95(B)": 0.73155,
+            "metrics/precision(B)": 0.97657,
+            "metrics/recall(B)": 0.57941,
+            "time": 40.7496,
+            "train/box_loss": 0.85864,
+            "train/cls_loss": 1.01302,
+            "train/dfl_loss": 0.93351,
+            "val/box_loss": 0.83178,
+            "val/cls_loss": 1.84188,
+            "val/dfl_loss": 0.90387
+          },
+          "name": "panel_detection_pilot",
+          "recorded_at": "2026-10-08T22:21:51.156951+00:00",
+          "source": "runs/detect/runs/solarvision/panel_detection_pilot/results.csv"
+        },
+        {
+          "epochs": 50,
+          "id": "defect_detection_full-2",
+          "last_metrics": {
+            "epoch": 50.0,
+            "lr/pg0": 2.98e-05,
+            "lr/pg1": 2.98e-05,
+            "lr/pg2": 2.98e-05,
+            "metrics/mAP50(B)": 0.5978,
+            "metrics/mAP50-95(B)": 0.33432,
+            "metrics/precision(B)": 0.5764,
+            "metrics/recall(B)": 0.63723,
+            "time": 25625.4,
+            "train/box_loss": 1.56288,
+            "train/cls_loss": 1.10225,
+            "train/dfl_loss": 1.15544,
+            "val/box_loss": 1.53415,
+            "val/cls_loss": 1.2713,
+            "val/dfl_loss": 1.07652
+          },
+          "name": "defect_detection_full-2",
+          "recorded_at": "2026-10-10T18:46:23.024376+00:00",
+          "source": "runs/solarvision/defect_detection_full-2/results.csv"
+        },
+        {
+          "epochs": 3,
+          "id": "defect_detection_full",
+          "last_metrics": {
+            "epoch": 3.0,
+            "lr/pg0": 0.000960281,
+            "lr/pg1": 0.000960281,
+            "lr/pg2": 0.000972695,
+            "metrics/mAP50(B)": 0.37527,
+            "metrics/mAP50-95(B)": 0.19775,
+            "metrics/precision(B)": 0.40061,
+            "metrics/recall(B)": 0.45414,
+            "time": 1527.15,
+            "train/box_loss": 1.88947,
+            "train/cls_loss": 1.73136,
+            "train/dfl_loss": 1.3415,
+            "val/box_loss": 1.65204,
+            "val/cls_loss": 1.72159,
+            "val/dfl_loss": 1.19751
+          },
+          "name": "defect_detection_full",
+          "recorded_at": "2026-10-10T11:18:28.087622+00:00",
+          "source": "runs/solarvision/defect_detection_full/results.csv"
+        },
+        {
+          "epochs": 3,
+          "id": "defect_detection_pilot",
+          "last_metrics": {
+            "epoch": 3.0,
+            "lr/pg0": 0.00068,
+            "lr/pg1": 0.00068,
+            "lr/pg2": 0.00068,
+            "metrics/mAP50(B)": 0.38299,
+            "metrics/mAP50-95(B)": 0.19322,
+            "metrics/precision(B)": 0.40615,
+            "metrics/recall(B)": 0.47925,
+            "time": 1894.72,
+            "train/box_loss": 1.8933,
+            "train/cls_loss": 1.69531,
+            "train/dfl_loss": 1.37972,
+            "val/box_loss": 1.75625,
+            "val/cls_loss": 1.72295,
+            "val/dfl_loss": 1.22794
+          },
+          "name": "defect_detection_pilot",
+          "recorded_at": "2026-10-10T10:11:08.000236+00:00",
+          "source": "runs/solarvision/defect_detection_pilot/results.csv"
+        }
+      ]
+    }
+  },
+  "payload_sha256": "7388a3524fcb6edf4bb25b7526775cb8ffd00a424964731e9bdfca973258b2b3",
+  "schema_version": 1,
+  "sources": [
+    {
+      "path": ".dvc/config",
+      "sha256": "2fb76bcac3b5fc061842d1b56375bdf18be125780c7786f42e8e2fec604b44eb"
+    },
+    {
+      "path": ".dvc/config.local",
+      "sha256": "39530da718bcd06fb3c01a27fcd16764f55ce5a6cb3b6aaae95c73e34532c635"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "f6051718891042b15ec08cd69f64ad9bba36b6fb8925d6ce592607eb2456fa28"
+    },
+    {
+      "path": "data/processed/pvf10_grouped/split_summary.json",
+      "sha256": "5f0e48513114b3daa8af844f5ae0282250498f28529d7c06248bcf5828b14332"
+    },
+    {
+      "path": "data/raw/defect_detection.dvc",
+      "sha256": "08f8c52beeecba267573048d30a29e80d27d9f3f9ab893bcf03f566b60c28dd0"
+    },
+    {
+      "path": "data/raw/external_validation.dvc",
+      "sha256": "4a79fd2b85aefe64002f80d0b817f18c4cf211ba517dc2a561f8c8b5b569bfe3"
+    },
+    {
+      "path": "data/raw/infrared_solar_modules.dvc",
+      "sha256": "ff7646961e8b299d8a3c893d9342956297ea3e9e8188d74745cda2809f7b5f1f"
+    },
+    {
+      "path": "data/raw/panel_detection.dvc",
+      "sha256": "21b6f78032a67608b74961b96e923a0633db82713d2321a91c11f909e68c7348"
+    },
+    {
+      "path": "data/raw/pvf10.dvc",
+      "sha256": "f711edfeebcf84eaca0033b2d7bf26bcc7e6a7293ccea56ee24e07a1c3115bad"
+    },
+    {
+      "path": "data/raw/rgb_thermal.dvc",
+      "sha256": "0422b4643ed2e11d6b346182beec3d7426c2520ab108afce5f5c1aa1d37c9d75"
+    },
+    {
+      "path": "data/raw/thermal_json_samples.dvc",
+      "sha256": "84790209eac07f1e43b2997359fec24f41b572abf875352613cf8efbf619dd20"
+    },
+    {
+      "path": "mlflow.db",
+      "sha256": "60b5a677f44486760b419687059ca2f3c0e39b8f39a93372cd0bf5d72bf3ab2d"
+    },
+    {
+      "path": "models/classification/resnet18_best.pth.dvc",
+      "sha256": "1892631b2bb5c30ccdaa2c9434ff418293d3142abe3bde4a65747639d2fc48e9"
+    },
+    {
+      "path": "models/classification/vit_tiny_best.pth.dvc",
+      "sha256": "1b8f13b59a38653fc5ef17a66980d493b59d1e93c4877aee8cf76b15a89937b0"
+    },
+    {
+      "path": "reports/classification/resnet18/test_metrics.json",
+      "sha256": "7d9339154f4aa21cf5d5b589f3407e3fe9febd24d7a72c365c94084656192dd3"
+    },
+    {
+      "path": "reports/classification/vit_tiny/test_metrics.json",
+      "sha256": "fea0a303c0a9f4e67847d94cca0335ecb8a656e158222a88dd621b3480c80e87"
+    },
+    {
+      "path": "reports/data_validation/raw_data_validation.json",
+      "sha256": "3005ccd1a8d1d7dbd6aa3854a7083a370445c0da42974f19618c6372c26a2f9d"
+    },
+    {
+      "path": "reports/detection/defect/test_metrics.json",
+      "sha256": "8afc47aa54c22622fd42d1c4738ea3fb1380f64c0ef1d6e2d9d0dd9d87677b3e"
+    },
+    {
+      "path": "reports/detection/panel/test_metrics.json",
+      "sha256": "a08a14df9852448289b296751c81459067cbb1a567dd6129d84c2efb07f779a4"
+    },
+    {
+      "path": "runs/detect/runs/solarvision/panel_detection_full/results.csv",
+      "sha256": "7c75fb08ced9b3fc3202a6e8892f1905e8c05f2dddf2b3d8185b5edfc4d383e7"
+    },
+    {
+      "path": "runs/detect/runs/solarvision/panel_detection_full/weights/best.pt.dvc",
+      "sha256": "11dfc0f1ded12c8f35fcc7d850f312e756c65a5a76a1e1e5d07d02773543ccec"
+    },
+    {
+      "path": "runs/detect/runs/solarvision/panel_detection_pilot/results.csv",
+      "sha256": "1a8e309be2058a91c15cffa467b458672c07b4dd6101c9e1b232c37098625e0c"
+    },
+    {
+      "path": "runs/solarvision/defect_detection_full-2/results.csv",
+      "sha256": "939dfd8adede8a8b280fb967f39f42981ddb5c09a0e524cac36eb17b5009abe1"
+    },
+    {
+      "path": "runs/solarvision/defect_detection_full-2/weights/best.pt.dvc",
+      "sha256": "0918e98e849062dcad61c50f1518233f876edf56598674d3dce04c8d65c747d2"
+    },
+    {
+      "path": "runs/solarvision/defect_detection_full/results.csv",
+      "sha256": "b5107fdae81094a5eb09d3160134362eb2f8e5f64c0927f48beb0fa92063945d"
+    },
+    {
+      "path": "runs/solarvision/defect_detection_pilot/results.csv",
+      "sha256": "408631a12566f22ea41a1a31b0f272065c279c8d8c482f44e9f33fe2029c4fe5"
+    }
+  ]
+}

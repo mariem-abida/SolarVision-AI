@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: solarvision-frontend:k8s-v1
+          image: solarvision-frontend:postfix-20261121
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -41,6 +41,9 @@ spec:
               value: "0.0.0.0"
             - name: PORT
               value: "8081"
+            # Host-browser address through port-forward, not cluster DNS.
+            - name: SOLARVISION_PUBLIC_API_BASE_URL
+              value: "http://127.0.0.1:18000"
 
           resources:
             requests:

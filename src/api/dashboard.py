@@ -8,6 +8,7 @@ import configparser
 import csv
 import json
 import math
+import os
 import re
 import sqlite3
 import threading
@@ -275,23 +276,53 @@ def _training_runs(root):
     return result
 
 
-def build_dashboard(root=ROOT):
+def _dvc_configuration(root):
+    """Read DVC's quoted INI sections without returning URLs or credentials.
+
+    Repo and local levels are overlaid like DVC. Configuration alone never
+    establishes remote access or that an artifact was synchronized.
+    """
+    parser = configparser.ConfigParser(interpolation=None)
+    configured_files = []
+    readable = False
+    try:
+        for relative in (".dvc/config", ".dvc/config.local"):
+            path = root / relative
+            if path.is_file():
+                configured_files.append(relative)
+                parser.read_string(_read_text(path))
+                readable = True
+        names = []
+        # Remove only a matching surrounding quote pair, preserving the
+        # double quotes around the remote name in both supported formats.
+        for section in parser.sections():
+            normalized = section.strip()
+            if len(normalized) > 1 and normalized[0] == normalized[-1] and normalized[0] in "'\"":
+                normalized = normalized[1:-1]
+            match = re.fullmatch(r'remote\s+"([^"\r\n]+)"', normalized)
+            if match and parser.has_option(section, "url") and parser.get(section, "url").strip():
+                names.append(match.group(1)[:100])
+        names = sorted(set(names))
+    except (OSError, UnicodeError, ValueError, configparser.Error):
+        names, readable = [], False
+    return {
+        "remote_configured": bool(names), "remote_names": names,
+        "remote_accessible": None, "artifacts_synchronized": None,
+        "configuration_source": "runtime" if readable else "unavailable",
+        "configuration_files_present": bool(configured_files),
+    }
+
+
+def build_dashboard(root=ROOT, *, use_snapshot=True, snapshot_path=None):
     datasets = _datasets(root)
     dvc_present = (root / ".dvc").is_dir() or any(d["version"] for d in datasets)
-    remote_configured = False
-    try:
-        parser = configparser.ConfigParser()
-        parser.read_string(_read_text(root / ".dvc/config"))
-        remote_configured = any(section.startswith('remote "') for section in parser.sections())
-    except (OSError, UnicodeError, ValueError, configparser.Error):
-        pass
-    return {
+    data = {
         "generated_at": _now(), "evaluations": _evaluations(root), "datasets": datasets,
         "mlops": {
             "dvc": {
                 "status": "available" if dvc_present else "not_configured",
                 "tracked_datasets": sum(d["version"] is not None for d in datasets),
-                "remote_configured": remote_configured,
+                **_dvc_configuration(root),
                 "explanation": "Local descriptors only; no remote connectivity or cache integrity check is performed."
                 if dvc_present else "DVC descriptors are not mounted in this runtime.",
             },
@@ -300,10 +331,16 @@ def build_dashboard(root=ROOT):
             "ci": {
                 "configured": (root / ".github/workflows/ci.yml").is_file(),
                 "source": ".github/workflows/ci.yml",
+                "execution_status": "not_checked",
                 "explanation": "Workflow file presence only; remote GitHub Actions execution status is not configured.",
             },
         },
     }
+    if not use_snapshot:
+        return data
+    from src.api.dashboard_snapshot import apply_snapshot
+    configured = snapshot_path or os.environ.get("SOLARVISION_DASHBOARD_SNAPSHOT")
+    return apply_snapshot(data, root, Path(configured) if configured else root / "configs/dashboard-snapshot.json")
 
 
 class RequestMetrics:
@@ -320,7 +357,7 @@ class RequestMetrics:
 
     def record(self, method, path, status_code, duration_ms):
         # Never retain uploaded filenames, URL query strings, or unbounded route keys.
-        known_paths = {"/health", "/dashboard", "/monitoring", "/predict/panels",
+        known_paths = {"/health", "/ready", "/dashboard", "/monitoring", "/predict/panels",
                        "/predict/defects", "/predict/classify", "/inspections",
                        "/inspections/{inspection_id}", "/inspections/{inspection_id}/image",
                        "/inspections/import", "/docs", "/openapi.json", "/redoc"}

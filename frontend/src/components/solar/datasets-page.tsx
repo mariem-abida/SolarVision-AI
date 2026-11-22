@@ -1,6 +1,7 @@
 import { Database, ArrowRight, ShieldCheck } from "lucide-react";
 import { bytes, statusLabel, useDashboard } from "@/lib/solar/dashboard";
 import { Badge, EmptyState, PageIntro, SectionHeading } from "./common";
+import { MetadataProvenance } from "./metadata-provenance";
 export function DatasetsPage() {
   const { data, error, isPending } = useDashboard();
   return (
@@ -11,6 +12,7 @@ export function DatasetsPage() {
         description="Dataset versions and statistics read from the project's DVC pointers and validation reports."
         action={<Badge>{data ? `${data.datasets.length} tracked datasets` : "DVC metadata"}</Badge>}
       />
+      <MetadataProvenance metadata={data?.metadata} />
       {error && (
         <div className="error-banner" role="alert">
           {error.message}

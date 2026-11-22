@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { percentage, useDashboard, type Evaluation } from "@/lib/solar/dashboard";
 import { Badge, EmptyState, PageIntro, SectionHeading } from "./common";
+import { MetadataProvenance } from "./metadata-provenance";
 
 const metricNames: Record<string, string> = {
   accuracy: "Test accuracy",
@@ -58,7 +59,12 @@ function Benchmark({ evaluations, keys }: { evaluations: Evaluation[]; keys: str
                   <strong>{percentage(e.metrics[key])}</strong>
                 </div>
                 <div className="progress-track">
-                  <progress max="1" value={e.metrics[key] ?? 0} />
+                  <progress
+                    aria-label={`${e.name}: ${metricNames[key] || key}`}
+                    aria-valuetext={percentage(e.metrics[key])}
+                    max="1"
+                    value={e.metrics[key] ?? 0}
+                  />
                 </div>
               </div>
             ))}
@@ -111,6 +117,7 @@ export function ModelsPage() {
           modification times are shown for provenance and may differ from evaluation dates.
         </span>
       </div>
+      <MetadataProvenance metadata={data?.metadata} />
       {error && (
         <div className="error-banner" role="alert">
           {error.message}

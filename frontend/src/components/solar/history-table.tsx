@@ -9,7 +9,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { inspectionImageUrl } from "@/lib/solar/api";
-import { classLabel, downloadJson, modes, type Inspection } from "@/lib/solar/domain";
+import {
+  classLabel,
+  downloadJson,
+  inspectionTiming,
+  modes,
+  type Inspection,
+} from "@/lib/solar/domain";
 import { useWorkspace } from "./workspace";
 import { Badge, EmptyState } from "./common";
 
@@ -200,10 +206,7 @@ export function HistoryTable({ records }: { records: Inspection[] }) {
               <DialogDescription>
                 {new Date(detail.date).toLocaleString()} · {detail.result.model}
                 <br />
-                {detail.result.inference_ms === undefined
-                  ? `${(detail.duration / 1000).toFixed(2)} s recorded processing time`
-                  : `${detail.result.inference_ms.toFixed(1)} ms model inference`}{" "}
-                · Inspection {detail.id}
+                {inspectionTiming(detail)} · Inspection {detail.id}
               </DialogDescription>
             </DialogHeader>
             <RetainedPreview key={`${detail.id}`} inspection={detail} />

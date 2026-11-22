@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
         - name: solarvision-api
-          image: solarvision-api:k8s-v2
+          image: solarvision-api:postfix-20261121
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -70,6 +70,11 @@ spec:
 
             - name: SOLARVISION_HISTORY_DB
               value: /app/storage/inspections.sqlite3
+
+            # Packaged public metadata only. This does not mount a tracking
+            # database, datasets, DVC remotes or OAuth credentials.
+            - name: SOLARVISION_DASHBOARD_SNAPSHOT
+              value: /app/configs/dashboard-snapshot.json
 
             - name: SOLARVISION_CORS_ORIGINS
               value: "http://localhost:8081,http://127.0.0.1:8081,http://localhost:8082,http://127.0.0.1:8082"
@@ -100,7 +105,7 @@ spec:
 
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: 8000
             periodSeconds: 10
 

@@ -5,6 +5,7 @@ import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
+from time import perf_counter
 
 from src.api.contracts import Inspection
 
@@ -28,9 +29,14 @@ def connect():
     return connection
 
 
-def save_inspection(record: Inspection, preview: bytes | None = None) -> None:
+def save_inspection(
+    record: Inspection,
+    preview: bytes | None = None,
+    *,
+    request_started_at: float | None = None,
+) -> None:
     with closing(connect()) as connection, connection:
-        connection.execute(
+        inserted = connection.execute(
             "INSERT OR IGNORE INTO inspections(id,date,record,preview) VALUES(?,?,?,?)",
             (
                 record.id,
@@ -39,6 +45,18 @@ def save_inspection(record: Inspection, preview: bytes | None = None) -> None:
                 preview,
             ),
         )
+        if inserted.rowcount == 1 and request_started_at is not None:
+            # Finalize only the row inserted in this transaction. Existing IDs,
+            # including legacy timings, are never updated by inference/import.
+            # The checkpoint includes decoding/inference and the initial INSERT,
+            # but precedes this timing UPDATE and the transaction's final commit.
+            elapsed = round(max(0, perf_counter() - request_started_at) * 1000, 3)
+            record.request_duration_ms = elapsed
+            record.result.request_duration_ms = elapsed
+            connection.execute(
+                "UPDATE inspections SET record=? WHERE id=?",
+                (record.model_dump_json(exclude_none=True), record.id),
+            )
 
 
 def list_inspections(limit: int = 200, offset: int = 0) -> dict:

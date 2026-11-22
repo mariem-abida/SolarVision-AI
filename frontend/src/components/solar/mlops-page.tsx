@@ -11,6 +11,7 @@ import {
 import { bytes, statusLabel, useDashboard } from "@/lib/solar/dashboard";
 import { useWorkspace } from "./workspace";
 import { Badge, EmptyState, PageIntro, SectionHeading } from "./common";
+import { MetadataProvenance } from "./metadata-provenance";
 function metricSummary(metrics: Record<string, number>) {
   return (
     Object.entries(metrics)
@@ -41,7 +42,7 @@ export function MlopsPage() {
       icon: GitBranch,
       status: mlops ? statusLabel(mlops.dvc.status) : "Unavailable",
       text: mlops
-        ? `${mlops.dvc.tracked_datasets} tracked datasets. Remote ${mlops.dvc.remote_configured ? "configured; remote connectivity unverified" : "not configured"}. ${mlops.dvc.explanation || ""}`
+        ? `${mlops.dvc.tracked_datasets} tracked datasets. Remote ${mlops.dvc.remote_configured ? `configured (${(mlops.dvc.remote_names || []).join(", ") || "recorded configuration"})` : "not configured"}. Remote access: not checked. Artifact synchronization: not checked. ${mlops.dvc.configuration_source === "snapshot" ? "Configuration recorded in the snapshot. " : ""}${mlops.dvc.explanation || ""}`
         : "DVC metadata has not been retrieved.",
     },
     {
@@ -56,7 +57,7 @@ export function MlopsPage() {
             : "Not configured",
       text: mlops?.mlflow.registry.length
         ? `${mlops.mlflow.registry.length} recorded model versions. Registry stages do not establish deployment status.`
-        : "No registered model versions are available in the local MLflow database.",
+        : "No registered model versions are available from the configured metadata sources.",
     },
     {
       title: "Training runs",
@@ -113,6 +114,7 @@ export function MlopsPage() {
           or synchronize DVC storage.
         </span>
       </div>
+      <MetadataProvenance metadata={data?.metadata} />
       {error && (
         <div className="error-banner" role="alert">
           {error.message}

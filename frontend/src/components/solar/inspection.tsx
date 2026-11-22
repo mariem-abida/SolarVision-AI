@@ -22,6 +22,7 @@ import {
   modes,
   validateFile,
   visibleDetections,
+  inspectionTiming,
   type Mode,
   type Prediction,
   type Inspection,
@@ -36,8 +37,11 @@ export function InspectionPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [serverPreview, setServerPreview] = useState<string | null>(null);
   const [thermalConfirmed, setThermalConfirmed] = useState(false);
-  const renderPreview = serverPreview ?? preview;
   const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [renderDimensions, setRenderDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<Mode | null>(null);
@@ -47,6 +51,7 @@ export function InspectionPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [tab, setTab] = useState<"original" | "annotated">("annotated");
   const [tiffUnsupported, setTiffUnsupported] = useState(false);
+  const renderPreview = tiffUnsupported ? serverPreview : preview;
   const [lastMode, setLastMode] = useState<Mode | null>(null);
   useEffect(() => {
     setThreshold(preferences.threshold);
@@ -62,7 +67,7 @@ export function InspectionPage() {
   }, [file]);
   const detections = result ? visibleDetections(result, threshold) : [];
   useEffect(() => {
-    if (!result?.detections || !renderPreview || !canvas.current || !dimensions) return;
+    if (!result?.detections || !renderPreview || !canvas.current || !renderDimensions) return;
     const target = canvas.current;
     const ctx = target.getContext("2d");
     if (!ctx) return;
@@ -71,19 +76,19 @@ export function InspectionPage() {
     image.crossOrigin = "anonymous";
     image.onload = () => {
       if (!active) return;
-      target.width = dimensions.width;
-      target.height = dimensions.height;
+      target.width = renderDimensions.width;
+      target.height = renderDimensions.height;
       ctx.drawImage(image, 0, 0);
       const styles = getComputedStyle(document.documentElement);
       const normal = styles.getPropertyValue("--primary");
       const highlighted = styles.getPropertyValue("--warning");
       const backing = styles.getPropertyValue("--hero-shade");
       const foreground = styles.getPropertyValue("--hero-foreground");
-      const line = Math.max(2, dimensions.width / 450);
-      const font = Math.max(13, dimensions.width / 75);
+      const line = Math.max(2, renderDimensions.width / 450);
+      const font = Math.max(13, renderDimensions.width / 75);
       ctx.font = `${font}px sans-serif`;
-      const sx = dimensions.width / (result.image_width || dimensions.width);
-      const sy = dimensions.height / (result.image_height || dimensions.height);
+      const sx = renderDimensions.width / (result.image_width || renderDimensions.width);
+      const sy = renderDimensions.height / (result.image_height || renderDimensions.height);
       visibleDetections(result, threshold).forEach((d, i) => {
         const [left, top, right, bottom] = d.bbox_xyxy;
         const x1 = left * sx,
@@ -106,7 +111,16 @@ export function InspectionPage() {
     return () => {
       active = false;
     };
-  }, [result, renderPreview, dimensions, threshold, selected, record, tab, preferences.theme]);
+  }, [
+    result,
+    renderPreview,
+    renderDimensions,
+    threshold,
+    selected,
+    record,
+    tab,
+    preferences.theme,
+  ]);
   function choose(next: File | undefined) {
     if (!next || busy) return;
     const validation = validateFile(next);
@@ -119,6 +133,7 @@ export function InspectionPage() {
     setResult(null);
     setRecord(null);
     setDimensions(null);
+    setRenderDimensions(null);
     setSelected(null);
     setTiffUnsupported(false);
     setServerPreview(null);
@@ -130,6 +145,7 @@ export function InspectionPage() {
     setResult(null);
     setRecord(null);
     setDimensions(null);
+    setRenderDimensions(null);
     setError(null);
     setLastMode(null);
     setServerPreview(null);
@@ -150,26 +166,33 @@ export function InspectionPage() {
     setResult(null);
     setRecord(null);
     const started = performance.now();
+    const apiUrl = preferences.apiUrl;
     try {
-      const prediction = await predict(preferences.apiUrl, mode, file, thermalConfirmed);
+      const prediction = await predict(apiUrl, mode, file, thermalConfirmed);
+      const clientDuration = performance.now() - started;
       const entry: Inspection = {
         id: prediction.inspection_id || crypto.randomUUID(),
         date: prediction.created_at || new Date().toISOString(),
         filename: file.name,
         mode,
-        duration: performance.now() - started,
+        duration: prediction.inference_ms ?? 0,
+        client_duration_ms: clientDuration,
+        ...(prediction.request_duration_ms === undefined
+          ? {}
+          : { request_duration_ms: prediction.request_duration_ms }),
         result: prediction,
         status: "Completed",
         has_image: !!prediction.inspection_id && !prediction.persistence_error,
       };
       setResult(prediction);
       setRecord(entry);
-      addInspection(entry);
+      addInspection(entry, apiUrl);
       setSelected(null);
       setTab("annotated");
+      if (prediction.image_width && prediction.image_height)
+        setDimensions({ width: prediction.image_width, height: prediction.image_height });
       if (entry.has_image) {
-        setServerPreview(inspectionImageUrl(preferences.apiUrl, entry.id));
-        setTiffUnsupported(false);
+        setServerPreview(inspectionImageUrl(apiUrl, entry.id));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Analysis failed.");
@@ -264,24 +287,28 @@ export function InspectionPage() {
           ) : (
             <>
               <div className="image-stage">
-                {renderPreview && !tiffUnsupported && (
+                {renderPreview && (
                   <img
                     crossOrigin="anonymous"
                     src={renderPreview}
                     alt="Original inspection image"
-                    onLoad={(e) =>
-                      setDimensions({
+                    onLoad={(e) => {
+                      const decoded = {
                         width: e.currentTarget.naturalWidth,
                         height: e.currentTarget.naturalHeight,
-                      })
-                    }
+                      };
+                      setRenderDimensions(decoded);
+                      if (renderPreview === preview) setDimensions(decoded);
+                    }}
                     onError={() => {
-                      if (serverPreview) {
+                      if (serverPreview && renderPreview === serverPreview) {
                         setServerPreview(null);
                         return;
                       }
-                      if (/\.tiff?$/i.test(file.name)) setTiffUnsupported(true);
-                      else {
+                      if (/\.tiff?$/i.test(file.name)) {
+                        setTiffUnsupported(true);
+                        setRenderDimensions(null);
+                      } else {
                         setError(
                           "This image cannot be decoded. It may be corrupted; choose a different image.",
                         );
@@ -290,7 +317,7 @@ export function InspectionPage() {
                     }}
                   />
                 )}{" "}
-                {tiffUnsupported && (
+                {tiffUnsupported && !serverPreview && (
                   <EmptyState
                     icon={ImageIcon}
                     title="TIFF preview unavailable"
@@ -298,6 +325,13 @@ export function InspectionPage() {
                   />
                 )}
               </div>
+              {tiffUnsupported && serverPreview && renderDimensions && (
+                <p className="text-note mt-2">
+                  Server-rendered TIFF preview: {renderDimensions.width} × {renderDimensions.height}{" "}
+                  px. The original upload remains {dimensions?.width} × {dimensions?.height} px; the
+                  annotated PNG uses this preview resolution.
+                </p>
+              )}
               <div className="file-meta">
                 <div>
                   <strong>{file.name}</strong>
@@ -426,9 +460,7 @@ export function InspectionPage() {
                 Inspection results <Badge tone="green">Completed</Badge>
               </h2>
               <p>
-                {result.model} · {(record.duration / 1000).toFixed(2)} s end-to-end
-                {result.inference_ms !== undefined &&
-                  ` · ${result.inference_ms.toFixed(1)} ms model inference`}
+                {result.model} · {inspectionTiming(record)}
               </p>
             </div>
             <div className="inline-actions">
@@ -460,6 +492,7 @@ export function InspectionPage() {
                   <Button
                     size="sm"
                     variant={tab === "original" ? "secondary" : "ghost"}
+                    aria-pressed={tab === "original"}
                     onClick={() => setTab("original")}
                   >
                     Original
@@ -467,11 +500,12 @@ export function InspectionPage() {
                   <Button
                     size="sm"
                     variant={tab === "annotated" ? "secondary" : "ghost"}
+                    aria-pressed={tab === "annotated"}
                     onClick={() => setTab("annotated")}
                   >
                     Annotated
                   </Button>
-                  {dimensions && (
+                  {renderDimensions && (
                     <Button variant="outline" size="sm" onClick={downloadImage}>
                       <Download />
                       Download image
@@ -479,7 +513,7 @@ export function InspectionPage() {
                   )}
                 </div>
                 <div className="image-stage">
-                  {!dimensions ? (
+                  {!renderDimensions ? (
                     <EmptyState
                       title="Image overlay unavailable"
                       description="The image preview is unavailable. Bounding-box coordinates remain available in the detection list."
@@ -489,7 +523,8 @@ export function InspectionPage() {
                       <canvas
                         ref={canvas}
                         aria-label="Annotated inspection image"
-                        className={tab === "original" ? "hidden" : ""}
+                        hidden={tab === "original"}
+                        style={{ display: tab === "original" ? "none" : "block" }}
                       />
                       {tab === "original" && renderPreview && (
                         <img
@@ -601,7 +636,7 @@ export function InspectionPage() {
                       </div>
                       {value !== undefined && (
                         <div className="progress-track">
-                          <progress max="1" value={value} />
+                          <progress max="1" value={value} aria-label={`${label} probability`} />
                         </div>
                       )}
                     </div>

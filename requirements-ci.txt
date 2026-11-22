@@ -1,0 +1,6 @@
+# Test/validation tools only. Runtime packages stay in requirements.txt.
+# CPU CI: install with -c constraints-cpu.txt and the official PyTorch CPU index.
+pytest==9.2.0
+httpx==0.28.1
+ruff==0.17.5
+PyYAML==6.0.3

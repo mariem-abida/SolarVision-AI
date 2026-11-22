@@ -111,6 +111,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script src="/solarvision-config.js" />
         <HeadContent />
       </head>
       <body>

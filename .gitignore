@@ -7,6 +7,7 @@
 # 1. PYTHON
 # ============================================
 .venv/
+.venv-*/
 venv/
 __pycache__/
 *.py[cod]
@@ -105,3 +106,49 @@ Thumbs.db
 data/inspections.sqlite3*
 frontend/.output/
 frontend/.nitro/
+
+# ============================================
+# 11. PRIVATE VALIDATION EVIDENCE AND BACKUPS
+# ============================================
+# Contains SQLite copies, browser histories, raw responses and local fixtures.
+# Publish only the reviewed summaries under docs/validation/.
+/reports/audits/
+/backups/
+/storage/
+/artifacts/
+# Existing evaluation mosaics contain dataset pixels. Keep their local files;
+# the publication plan removes only their Git index entries after approval.
+/reports/detection/**/test_evaluation/val_batch*.jpg
+frontend/test-results/
+frontend/playwright-report/
+frontend/.e2e/
+
+# Databases and journals, wherever a local tool creates them.
+*.db
+*.db-wal
+*.db-shm
+*.db*
+*.sqlite*
+
+# Local archives are DVC-managed artifacts, not source files.
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+
+# Local authentication, keys and agent/provider configuration.
+.dvc/config.local
+credentials*.json
+client_secret*.json
+token.json
+token.pickle
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.aws/
+.kube/
+.codex/
+.agents/

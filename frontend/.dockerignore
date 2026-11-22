@@ -11,3 +11,6 @@ dist-ssr
 .env.*
 *.local
 *.log
+.e2e-local
+test-results
+playwright-report

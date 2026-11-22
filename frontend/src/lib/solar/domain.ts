@@ -45,6 +45,7 @@ export type Prediction = {
   confidence?: number;
   probabilities?: Record<string, number>;
   inference_ms?: number;
+  request_duration_ms?: number;
   image_width?: number;
   image_height?: number;
   inspection_id?: string;
@@ -57,6 +58,8 @@ export type Inspection = {
   filename: string;
   mode: Mode;
   duration: number;
+  request_duration_ms?: number;
+  client_duration_ms?: number;
   result: Prediction;
   status: "Completed";
   has_image?: boolean;
@@ -68,7 +71,9 @@ export type Preferences = {
   threshold: number;
 };
 export const defaultPreferences: Preferences = {
-  apiUrl: import.meta.env["VITE_API_BASE_URL"] || "http://127.0.0.1:8000",
+  get apiUrl() {
+    return getDefaultApiUrl();
+  },
   theme: "dark",
   mode: "panels",
   threshold: 0.5,
@@ -92,6 +97,21 @@ export function mergeHistory(local: Inspection[], server: Inspection[]): Inspect
   local.forEach((record) => records.set(record.id, { ...records.get(record.id), ...record }));
   return [...records.values()].sort((a, b) => b.date.localeCompare(a.date));
 }
+export function historyStorageKey(apiUrl: string): string {
+  return `solarvision-history:v2:${encodeURIComponent(new URL(apiUrl.trim()).toString().replace(/\/+$/, ""))}`;
+}
+export function inspectionTiming(record: Inspection): string {
+  const times: string[] = [];
+  if (record.result.inference_ms !== undefined)
+    times.push(`${record.result.inference_ms.toFixed(1)} ms model inference`);
+  const server = record.request_duration_ms ?? record.result.request_duration_ms;
+  if (server !== undefined) times.push(`${server.toFixed(1)} ms server processing`);
+  if (record.client_duration_ms !== undefined)
+    times.push(`${(record.client_duration_ms / 1000).toFixed(2)} s browser end-to-end`);
+  if (!times.length)
+    times.push(`${record.duration.toFixed(1)} ms legacy duration (measurement source unknown)`);
+  return times.join(" · ");
+}
 export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -105,3 +125,4 @@ export function downloadBlob(blob: Blob, filename: string) {
 export function downloadJson(value: unknown, filename: string) {
   downloadBlob(new Blob([JSON.stringify(value, null, 2)], { type: "application/json" }), filename);
 }
+import { getDefaultApiUrl } from "./runtime-config";

@@ -31,8 +31,11 @@ import { percentage, useDashboard } from "@/lib/solar/dashboard";
 import { useWorkspace } from "./workspace";
 import { Badge, EmptyState, MetricCard, NewInspectionButton, SectionHeading } from "./common";
 import { HistoryTable } from "./history-table";
+import type { Mode } from "@/lib/solar/domain";
 export function Overview() {
   const { history, healthState, ready } = useWorkspace();
+  const modelLoaded = (mode: Mode) =>
+    healthState.reachable && (healthState.modelStates?.[mode] ?? healthState.models);
   const { data, error } = useDashboard();
   const panels = history
     .filter((r) => r.mode === "panels")
@@ -243,6 +246,7 @@ export function Overview() {
           {[
             {
               id: "panels",
+              mode: "panels" as const,
               title: "Solar Panel Detection",
               task: "YOLO11n · Object detection",
               key: "map50",
@@ -252,6 +256,7 @@ export function Overview() {
             },
             {
               id: "defects",
+              mode: "defects" as const,
               title: "Defect Detection",
               task: "YOLO11n · Object detection",
               key: "map50",
@@ -261,6 +266,7 @@ export function Overview() {
             },
             {
               id: "resnet18",
+              mode: "classify" as const,
               title: "Thermal Classification",
               task: "ResNet18 · 10 classes",
               key: "accuracy",
@@ -278,10 +284,12 @@ export function Overview() {
                   <h3>{m.title}</h3>
                   <p>{m.task}</p>
                 </div>
-                <Badge
-                  tone={healthState.models && healthState.state === "online" ? "green" : "muted"}
-                >
-                  {healthState.models && healthState.state === "online" ? "Loaded" : "Not verified"}
+                <Badge tone={modelLoaded(m.mode) ? "green" : "muted"}>
+                  {modelLoaded(m.mode)
+                    ? "Loaded"
+                    : healthState.reachable && healthState.modelStates?.[m.mode] === false
+                      ? "Unavailable"
+                      : "Not verified"}
                 </Badge>
               </div>
               <div className="model-card-metric">

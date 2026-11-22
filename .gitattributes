@@ -1,0 +1,17 @@
+# Deterministic source checkout on Windows and Linux.
+* text=auto eol=lf
+
+# The public snapshot records byte-level SHA256 for these source artifacts.
+# Preserve their actual bytes instead of changing CRLF/LF during Git staging
+# or checkout. This does not modify their data or the local working files.
+/.dvc/config -text !eol
+/data/raw/*.dvc -text !eol
+/models/classification/resnet18_best.pth.dvc -text !eol
+/models/classification/vit_tiny_best.pth.dvc -text !eol
+/reports/classification/resnet18/test_metrics.json -text !eol
+/reports/classification/vit_tiny/test_metrics.json -text !eol
+/reports/detection/panel/test_metrics.json -text !eol
+/reports/detection/defect/test_metrics.json -text !eol
+/reports/data_validation/raw_data_validation.json -text !eol
+/runs/detect/runs/solarvision/panel_detection_full/weights/best.pt.dvc -text !eol
+/runs/solarvision/defect_detection_full-2/weights/best.pt.dvc -text !eol

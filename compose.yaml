@@ -20,10 +20,13 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
       SOLARVISION_HISTORY_DB: /app/storage/inspections.sqlite3
+      # Image carries only a public metadata snapshot; mounted source files
+      # take precedence. Optional MLflow DB remains read-only in its override.
+      SOLARVISION_DASHBOARD_SNAPSHOT: /app/configs/dashboard-snapshot.json
       # Append additional browser origins as a comma-separated list if necessary.
-      SOLARVISION_CORS_ORIGINS: ${SOLARVISION_CORS_ORIGINS:-http://localhost:8081,http://127.0.0.1:8081}
+      SOLARVISION_CORS_ORIGINS: ${SOLARVISION_CORS_ORIGINS:-http://localhost:8081,http://127.0.0.1:8081,http://localhost:8082,http://127.0.0.1:8082}
     healthcheck:
-      test: ["CMD", "python", "-c", "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)); raise SystemExit(0 if isinstance(r.get('models_loaded'), bool) and isinstance(r.get('status'), str) else 1)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=5)"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -43,6 +46,8 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: "8081"
+      # Address seen by the host browser; may differ from container service DNS.
+      SOLARVISION_PUBLIC_API_BASE_URL: ${SOLARVISION_PUBLIC_API_BASE_URL:-http://127.0.0.1:8000}
     depends_on:
       solarvision-api:
         condition: service_healthy

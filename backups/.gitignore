@@ -1,4 +1,5 @@
-/solarvision_mlflow_backup.zip
-if (Test-Path backups/.gitignore) {
-    git add backups/.gitignore
-}
+# Backup contents stay local. Existing reviewed DVC pointers contain metadata
+# only; this file must contain ignore patterns, never shell commands.
+*
+!.gitignore
+!*.dvc

@@ -13,7 +13,7 @@ from uuid import uuid4
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 from src.api.contracts import HistoryImport, Inspection, Prediction
@@ -46,7 +46,7 @@ app = FastAPI(title="SolarVision AI API", version="1.1.0", lifespan=lifespan)
 local_origins = [
     f"http://{host}:{port}"
     for host in ("localhost", "127.0.0.1")
-    for port in (8080, 8081)
+    for port in (8080, 8081, 8082)
 ]
 extra_origins = [
     value.strip().rstrip("/")
@@ -126,19 +126,49 @@ async def save_upload(file: UploadFile, thermal: bool = False):
         image.close()
 
 
+def model_availability():
+    """Report actual model objects, independently of registry metadata."""
+    return {
+        mode: pipeline is not None
+        and getattr(pipeline, attribute, None) is not None
+        and callable(getattr(pipeline, method, None))
+        and (mode != "classify" or bool(getattr(pipeline, "classes", [])))
+        for mode, attribute, method in (
+            ("panels", "panel_model", "detect_panels"),
+            ("defects", "defect_model", "detect_defects"),
+            ("classify", "classifier", "classify_panel"),
+        )
+    }
+
+
 @app.get("/health")
 def health():
-    loaded = pipeline is not None
+    # Liveness remains HTTP 200 while the process can serve requests. Readiness
+    # is a separate contract so dashboards remain usable when a model is absent.
+    models = model_availability()
+    loaded = all(models.values())
     return {
-        "status": "healthy" if loaded else "unavailable",
+        "status": "healthy"
+        if loaded
+        else "partial"
+        if any(models.values())
+        else "unavailable",
         "models_loaded": loaded,
         "device": str(getattr(pipeline, "device", "unavailable")),
-        "models": {name: loaded for name in ("panels", "defects", "classify")},
+        "models": models,
         "classification_classes": list(getattr(pipeline, "classes", [])),
         "explanation": None
         if loaded
         else "Models unavailable. Check server logs and trained checkpoint mounts.",
     }
+
+
+@app.get(
+    "/ready", responses={503: {"description": "Required inference models unavailable"}}
+)
+def readiness():
+    state = health()
+    return JSONResponse(state, status_code=200 if state["models_loaded"] else 503)
 
 
 def run_inference(mode, path):
@@ -162,7 +192,8 @@ def run_inference(mode, path):
 
 
 async def predict_image(mode: str, file: UploadFile):
-    if pipeline is None:
+    request_started_at = perf_counter()
+    if not model_availability().get(mode, False):
         raise HTTPException(
             503, "Models unavailable. Check trained checkpoints and server logs."
         )
@@ -186,10 +217,15 @@ async def predict_image(mode: str, file: UploadFile):
             has_image=True,
         )
         try:
-            await run_in_threadpool(save_inspection, record, preview)
+            await run_in_threadpool(
+                save_inspection, record, preview, request_started_at=request_started_at
+            )
         except Exception:
             logger.exception("Could not persist inspection")
             prediction.persistence_error = "Inference completed; server history could not be saved. Keep the local record or export JSON."
+            prediction.request_duration_ms = round(
+                (perf_counter() - request_started_at) * 1000, 3
+            )
         return prediction
     except HTTPException:
         raise

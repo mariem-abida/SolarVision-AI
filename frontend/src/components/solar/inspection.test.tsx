@@ -23,6 +23,7 @@ beforeEach(() => {
   mocks.predict.mockReset();
   mocks.addInspection.mockReset();
   mocks.recordError.mockReset();
+  vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
   vi.stubGlobal(
     "URL",
     class extends URL {
@@ -38,6 +39,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 function upload(name = "farm.jpg") {
   const image = new File(["test-image-content"], name, {
@@ -54,6 +56,63 @@ function analysisButton(title: string) {
   return within(card).getByRole("button", { name: "Run Analysis" });
 }
 describe("AI Inspection workflow", () => {
+  it("shows only the original when selected, even when stylesheet forces canvas display", async () => {
+    mocks.predict.mockResolvedValue({
+      model: "YOLO",
+      count: 0,
+      detections: [],
+      image_width: 3000,
+      image_height: 2000,
+      inference_ms: 12,
+      inspection_id: "high-resolution",
+    });
+    const style = document.createElement("style");
+    style.textContent = ".hidden{display:none}.image-stage canvas{display:block}";
+    document.head.append(style);
+    render(<InspectionPage />);
+    upload();
+    const image = screen.getByAltText("Original inspection image");
+    Object.defineProperties(image, {
+      naturalWidth: { configurable: true, value: 3000 },
+      naturalHeight: { configurable: true, value: 2000 },
+    });
+    fireEvent.load(image);
+    fireEvent.click(analysisButton("Solar Panel Detection"));
+    await screen.findByText("0 detections");
+    fireEvent.click(screen.getByRole("button", { name: "Original" }));
+    expect(screen.getByAltText("Original result image")).toBeVisible();
+    expect(screen.queryByLabelText("Annotated inspection image")).not.toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Annotated" }));
+    expect(screen.getByLabelText("Annotated inspection image")).toBeVisible();
+    expect(screen.queryByAltText("Original result image")).not.toBeInTheDocument();
+    style.remove();
+  });
+  it("keeps a 3000px browser-decodable original instead of substituting a 1600px retained preview", async () => {
+    mocks.predict.mockResolvedValue({
+      model: "YOLO",
+      count: 0,
+      detections: [],
+      image_width: 3000,
+      image_height: 2000,
+      inference_ms: 12,
+      inspection_id: "high-resolution",
+    });
+    render(<InspectionPage />);
+    upload();
+    const image = screen.getByAltText("Original inspection image");
+    Object.defineProperties(image, {
+      naturalWidth: { configurable: true, value: 3000 },
+      naturalHeight: { configurable: true, value: 2000 },
+    });
+    fireEvent.load(image);
+    fireEvent.click(analysisButton("Solar Panel Detection"));
+    await screen.findByText("0 detections");
+    expect(screen.getByAltText("Original inspection image")).toHaveAttribute(
+      "src",
+      "blob:inspection-test",
+    );
+    expect(screen.getByText(/3000 × 2000 px/)).toBeInTheDocument();
+  });
   it("runs the chosen detector, shows actual scores and timing, and saves the returned inspection", async () => {
     const result = {
       model: "YOLO11n Panel Detection",
@@ -78,16 +137,18 @@ describe("AI Inspection workflow", () => {
     expect(screen.getByText("1 visible at current threshold")).toBeInTheDocument();
     expect(screen.getByText("91.0%")).toBeInTheDocument();
     expect(screen.getByText("bbox_xyxy: [10, 20, 100, 120]")).toBeInTheDocument();
-    expect(screen.getByText(/42.5 ms model inference/)).toHaveTextContent("s end-to-end");
+    expect(screen.getByText(/42.5 ms model inference/)).toHaveTextContent("s browser end-to-end");
     expect(mocks.addInspection).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "inspection-detection",
         filename: "farm.jpg",
         mode: "panels",
-        duration: expect.any(Number),
+        duration: 42.5,
+        client_duration_ms: expect.any(Number),
         result,
         has_image: true,
       }),
+      "http://127.0.0.1:8000",
     );
     expect(screen.getByRole("button", { name: "JSON report" })).toBeEnabled();
     fireEvent.change(screen.getByLabelText(/Display confidence threshold/), {
@@ -136,6 +197,7 @@ describe("AI Inspection workflow", () => {
         mode: "classify",
         result: expect.objectContaining({ probabilities }),
       }),
+      "http://127.0.0.1:8000",
     );
   });
   it("shows inference errors without recording a successful inspection", async () => {
