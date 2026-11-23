@@ -14,7 +14,14 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFi
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import (
+    Image,
+    ImageOps,
+    JpegImagePlugin,
+    PngImagePlugin,
+    TiffImagePlugin,
+    UnidentifiedImageError,
+)
 
 from src.api.contracts import HistoryImport, Inspection, Prediction
 from src.api.dashboard import request_metrics
@@ -81,9 +88,26 @@ async def monitor_requests(request: Request, call_next):
         )
 
 
+def open_upload_image(source: io.BytesIO):
+    # Use only the built-in codecs accepted by this upload API. Ultralytics
+    # patches Image.open to try installing an optional HEIF plugin on errors.
+    # Direct codecs keep validation offline and independent of import order.
+    for decoder in (
+        JpegImagePlugin.JpegImageFile,
+        PngImagePlugin.PngImageFile,
+        TiffImagePlugin.TiffImageFile,
+    ):
+        source.seek(0)
+        try:
+            return decoder(source)
+        except SyntaxError:
+            continue
+    raise UnidentifiedImageError("Expected a JPEG, PNG or TIFF image")
+
+
 def decode_image(data: bytes, thermal: bool):
     try:
-        with Image.open(io.BytesIO(data)) as original:
+        with io.BytesIO(data) as source, open_upload_image(source) as original:
             if original.width * original.height > MAX_PIXELS:
                 raise HTTPException(413, "Image exceeds 25 million pixels")
             if thermal and original.mode not in {"L", "RGB", "RGBA", "P"}:
@@ -96,6 +120,7 @@ def decode_image(data: bytes, thermal: bool):
     except (
         UnidentifiedImageError,
         OSError,
+        SyntaxError,
         ValueError,
         Image.DecompressionBombError,
     ) as exc:

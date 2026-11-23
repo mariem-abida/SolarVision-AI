@@ -1,11 +1,15 @@
 import io
 import json
+import os
 import sqlite3
+import subprocess
+import sys
+from pathlib import Path
 from time import perf_counter
 
 import pytest
 from fastapi.testclient import TestClient
-from PIL import Image
+from PIL import Image, PngImagePlugin
 
 from src.api import main as api
 from src.api.contracts import Inspection, Prediction
@@ -48,6 +52,34 @@ def image_bytes():
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()
+
+
+def encoded_image(format, mode="RGB", size=(100, 120), **options):
+    buffer = io.BytesIO()
+    with Image.new(mode, size) as image:
+        image.save(buffer, format=format, **options)
+    return buffer.getvalue()
+
+
+@pytest.fixture
+def unavailable_heif(monkeypatch):
+    """A global third-party opener may fail; the upload boundary must avoid it."""
+    from ultralytics.utils import checks
+
+    calls = {"global_open": 0, "requirements": 0}
+
+    def missing_plugin(*args, **kwargs):
+        calls["global_open"] += 1
+        raise ModuleNotFoundError("Synthetic missing optional plugin", name="pi_heif")
+
+    def forbid_install(*args, **kwargs):
+        calls["requirements"] += 1
+        raise AssertionError("An upload must not check or install optional packages")
+
+    monkeypatch.setattr(Image, "open", missing_plugin)
+    monkeypatch.setattr(checks, "check_requirements", forbid_install)
+    monkeypatch.setitem(sys.modules, "pi_heif", None)
+    return calls
 
 
 def upload(client, endpoint, image_bytes):
@@ -101,6 +133,208 @@ def test_invalid_image(client):
     )
 
     assert response.status_code == 400
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param(b"", id="empty"),
+        pytest.param(b"invalid image bytes", id="unidentified"),
+        pytest.param(b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR", id="truncated-png"),
+        pytest.param(b"\xff\xd8\xff\xe0\x00\x10JFIF\x00", id="truncated-jpeg"),
+        pytest.param(b"II*\x00\x08\x00\x00\x00", id="truncated-tiff"),
+    ],
+)
+def test_invalid_upload_rejected_without_optional_plugins(
+    client, monkeypatch, unavailable_heif, data
+):
+    def forbid_inference(*args, **kwargs):
+        raise AssertionError("Invalid bytes must not reach model inference")
+
+    monkeypatch.setattr(api, "run_inference", forbid_inference)
+    response = client.post(
+        "/predict/panels", files={"file": ("invalid.png", data, "image/png")}
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid or unsafe image"
+    assert client.get("/inspections").json()["total"] == 0
+    assert unavailable_heif == {"global_open": 0, "requirements": 0}
+
+
+@pytest.mark.parametrize(
+    ("format", "suffix", "mode", "options"),
+    [
+        pytest.param("JPEG", "jpg", "RGB", {}, id="jpeg"),
+        pytest.param("PNG", "png", "RGB", {}, id="png-rgb"),
+        pytest.param("PNG", "png", "RGBA", {}, id="png-alpha"),
+        pytest.param("PNG", "png", "P", {}, id="png-palette"),
+        pytest.param("TIFF", "tif", "L", {}, id="tiff-grayscale"),
+        pytest.param("TIFF", "tiff", "RGB", {}, id="tiff-rgb"),
+        pytest.param("TIFF", "tif", "RGB", {"big_tiff": True}, id="bigtiff"),
+    ],
+)
+def test_supported_uploads_and_previews_without_global_opener(
+    client, unavailable_heif, format, suffix, mode, options
+):
+    data = encoded_image(format, mode, **options)
+    if options.get("big_tiff"):
+        assert data[:4] in {b"II+\x00", b"MM\x00+"}
+    content_type = {"JPEG": "image/jpeg", "PNG": "image/png", "TIFF": "image/tiff"}[
+        format
+    ]
+    response = client.post(
+        "/predict/panels",
+        files={"file": (f"supported.{suffix}", data, content_type)},
+    )
+    assert response.status_code == 200
+    prediction = response.json()
+    assert (prediction["image_width"], prediction["image_height"]) == (100, 120)
+    assert prediction["count"] == 1
+    history = client.get("/inspections").json()
+    assert history["total"] == 1
+    assert history["records"][0]["result"] == prediction
+    preview = client.get(f"/inspections/{prediction['inspection_id']}/image")
+    assert preview.status_code == 200
+    with PngImagePlugin.PngImageFile(io.BytesIO(preview.content)) as image:
+        image.load()
+        assert image.size == (100, 120)
+        assert image.mode == "RGB"
+    assert unavailable_heif == {"global_open": 0, "requirements": 0}
+
+
+def test_jpeg_exif_orientation_survives_optional_plugin_absence(
+    client, unavailable_heif
+):
+    exif = Image.Exif()
+    exif[274] = 6  # Rotate 90 degrees clockwise when normalizing the upload.
+    data = encoded_image("JPEG", size=(100, 120), exif=exif)
+    response = client.post(
+        "/predict/panels",
+        files={"file": ("rotated.jpg", data, "image/jpeg")},
+    )
+    assert response.status_code == 200
+    prediction = response.json()
+    assert (prediction["image_width"], prediction["image_height"]) == (120, 100)
+    preview = client.get(f"/inspections/{prediction['inspection_id']}/image")
+    with PngImagePlugin.PngImageFile(io.BytesIO(preview.content)) as image:
+        image.load()
+        assert image.size == (120, 100)
+        assert image.getexif().get(274, 1) == 1
+    assert unavailable_heif == {"global_open": 0, "requirements": 0}
+
+
+def test_8bit_thermal_tiff_still_classifies_without_optional_plugins(
+    client, unavailable_heif
+):
+    response = client.post(
+        "/predict/classify",
+        data={"thermal_confirmed": "true"},
+        files={"file": ("thermal.tif", encoded_image("TIFF", "L"), "image/tiff")},
+    )
+    assert response.status_code == 200
+    assert response.json()["predicted_class"] == "test_class"
+    assert client.get("/inspections").json()["total"] == 1
+    assert unavailable_heif == {"global_open": 0, "requirements": 0}
+
+
+def test_16bit_thermal_tiff_still_rejected_without_optional_plugins(
+    client, monkeypatch, unavailable_heif
+):
+    def forbid_inference(*args, **kwargs):
+        raise AssertionError("16-bit thermal data must not reach the classifier")
+
+    monkeypatch.setattr(api, "run_inference", forbid_inference)
+    response = client.post(
+        "/predict/classify",
+        data={"thermal_confirmed": "true"},
+        files={"file": ("thermal.tif", encoded_image("TIFF", "I;16"), "image/tiff")},
+    )
+    assert response.status_code == 422
+    assert "8-bit" in response.json()["detail"]
+    assert client.get("/inspections").json()["total"] == 0
+    assert unavailable_heif == {"global_open": 0, "requirements": 0}
+
+
+def test_pixel_limit_remains_before_decode_without_optional_plugins(
+    client, monkeypatch, unavailable_heif
+):
+    data = encoded_image("PNG", size=(100, 100))
+
+    def forbid_load(*args, **kwargs):
+        raise AssertionError("The pixel limit must be checked before decoding pixels")
+
+    monkeypatch.setattr(api, "MAX_PIXELS", 9_999)
+    monkeypatch.setattr(PngImagePlugin.PngImageFile, "load", forbid_load)
+    response = client.post(
+        "/predict/panels", files={"file": ("too-large.png", data, "image/png")}
+    )
+    assert response.status_code == 413
+    assert client.get("/inspections").json()["total"] == 0
+    assert unavailable_heif == {"global_open": 0, "requirements": 0}
+
+
+def test_unrelated_decoder_import_failure_is_not_a_bad_upload(monkeypatch):
+    data = encoded_image("PNG")
+
+    def missing_dependency(*args, **kwargs):
+        raise ModuleNotFoundError(
+            "Synthetic decoder dependency failure", name="unrelated_decoder_dependency"
+        )
+
+    monkeypatch.setattr(PngImagePlugin.PngImageFile, "load", missing_dependency)
+    with pytest.raises(ModuleNotFoundError) as error:
+        api.decode_image(data, thermal=False)
+    assert error.value.name == "unrelated_decoder_dependency"
+
+
+def test_supported_decode_is_independent_of_earlier_pipeline_import(tmp_path):
+    # A new interpreter prevents collection order from concealing a captured
+    # Image.open alias. No pipeline is instantiated and no model is loaded.
+    config_directory = tmp_path / "ultralytics"
+    config_directory.mkdir()
+    script = """
+import io
+import os
+import sys
+from pathlib import Path
+from PIL import Image
+from src.inference import pipeline
+from ultralytics.utils import USER_CONFIG_DIR, checks
+
+assert USER_CONFIG_DIR.resolve().is_relative_to(Path(os.environ["YOLO_CONFIG_DIR"]).resolve())
+
+def forbidden(*args, **kwargs):
+    raise AssertionError("Global Image.open or optional installer was invoked")
+
+checks.check_requirements = forbidden
+Image.open = forbidden
+sys.modules["pi_heif"] = None
+from src.api import main
+buffer = io.BytesIO()
+with Image.new("RGB", (12, 10)) as image:
+    image.save(buffer, format="PNG")
+with main.decode_image(buffer.getvalue(), thermal=False) as image:
+    assert image.size == (12, 10)
+assert main.SolarVisionPipeline is pipeline.SolarVisionPipeline
+"""
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", script],
+        cwd=Path(__file__).resolve().parents[1],
+        env={
+            **os.environ,
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "YOLO_OFFLINE": "true",
+            "HF_HUB_OFFLINE": "1",
+            "YOLO_CONFIG_DIR": str(config_directory),
+            "SOLARVISION_HISTORY_DB": str(tmp_path / "unused.sqlite3"),
+        },
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stderr
+    assert not (tmp_path / "unused.sqlite3").exists()
 
 
 @pytest.mark.parametrize(
